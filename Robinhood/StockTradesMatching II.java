@@ -8,6 +8,7 @@ class Solution {
 
 
        exactMatch(houseMap, streetMap);
+
        Map<String, List<String>> groupedHouses  = attributeMatch(houseMap);
        Map<String, List<String>> groupedStreets  = attributeMatch(streetMap);
 
@@ -20,8 +21,8 @@ class Solution {
                 int matches = Math.min(listOfhouse.size(), listOfStreets.size());
 
                 for(int i=0; i<matches; i++){
-                    listOfhouse.remove(0);
-                    listOfStreets.remove(0);
+                    listOfhouse.remove(listOfhouse.size() - 1);
+                    listOfStreets.remove(listOfStreets.size() - 1);
                 }
 
                 if(listOfhouse.size() == 0) groupedHouses.remove(newHouse);
