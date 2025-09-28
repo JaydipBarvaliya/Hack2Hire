@@ -1,88 +1,63 @@
-
 import java.util.*;
 
 class Solution {
-
-
     public List<String> empRefProgram(List<String> referrers, List<String> referrals) {
 
+        Map<String, List<String>> map = new HashMap<>();
+        Set<String> set = new HashSet<>();
 
-        Map<String, List<String>> map = getStringListMap(referrers, referrals);
-        Map<String, Integer> visited = new HashMap<>();
-        PriorityQueue<Node> maxPQ = new PriorityQueue<>((a, b) -> {
+        for (int i = 0; i < referrals.size(); i++) {
 
-            if(a.count == b.count){
-                return a.name.compareTo(b.name);
-            }else{
-                return b.count - a.count;
+            String person = referrers.get(i);
+            String referredPerson = referrals.get(i);
+            set.add(person);
+            if (map.containsKey(person)) {
+                map.get(person).add(referredPerson);
+            } else {
+                List<String> list = new ArrayList<>();
+                list.add(referredPerson);
+                map.put(person, list);
             }
-
-        });
-
-        List<String> result = new ArrayList<>();
-        map.entrySet().forEach(entry -> {
-
-            int count = dfs(entry.getKey(),  map, visited);
-
-            Node node = new Node(count, entry.getKey());
-            maxPQ.add(node);
-        });
-
-        int k = 3;
-        while(k-- > 0 && !maxPQ.isEmpty()){
-            Node node = maxPQ.poll();
-            String ans = node.name + " " + node.count;
-            result.add(ans);
         }
 
+        PriorityQueue<Person> maxHeap = new PriorityQueue<>( (a,b) -> a.count != b.count ? b.count - a.count : a.name.compareTo(b.name) );
+
+        Map<String, Integer> memo = new HashMap<>();
+        for(String name: set){
+            int count = dfs(name, map,  memo);
+            maxHeap.offer(new Person(name, count));
+        }
+
+        List<String> result = new ArrayList<>();
+        for(int i = 0; i < 3 && !maxHeap.isEmpty(); i++){
+            Person person = maxHeap.poll();
+            result.add(person.name + " " + person.count);
+        }
         return result;
     }
 
-    public int dfs(String key,  Map<String, List<String>> map, Map<String, Integer> visited){
+    public int dfs(String source, Map<String, List<String>> map, Map<String, Integer> memo){
 
-        if(!map.containsKey(key)) return 0;
+        if(memo.containsKey(source)) return memo.get(source);
 
-        if(visited.containsKey(key)) return visited.get(key);
+        int total = 0;
 
-        int count = 0;
-        for(String neighbor : map.get(key)){
-            count = count + 1 + dfs(neighbor, map, visited);
-        }
-
-        visited.put(key, count);
-        return count;
-    }
-
-
-    private static Map<String, List<String>> getStringListMap(List<String> referrers, List<String> referrals) {
-
-        Map<String, List<String>> map = new HashMap<>();
-        int size = referrers.size();
-
-        for(int i = 0; i < size; i++){
-
-            String key = referrers.get(i);
-            String value = referrals.get(i);
-
-            if(map.containsKey(key)){
-                List<String> existingList = map.get(key);
-                existingList.add(value);
-                map.put(key, existingList);
-            }else{
-                List<String> newList = new ArrayList<>();
-                newList.add(value);
-                map.put(key, newList);
+        if(map.containsKey(source)){
+            for(String neighbor : map.get(source)){
+                total = total + 1 + dfs(neighbor, map, memo);
             }
         }
-        return map;
+        memo.put(source, total);
+        return total;
     }
 
-    static class Node{
-        int count;
+    public static class Person{
         String name;
-        public Node(int count, String name){
-            this.count = count;
+        int count;
+
+        public Person(String name, int count){
             this.name = name;
+            this.count = count;
         }
     }
 }
