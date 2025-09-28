@@ -1,60 +1,43 @@
 import java.util.*;
-
 class Solution {
-    public double portValOptimization(int totalBudget, List<List<String>> securities) {
+    public double portValOptimization(int cash, List<List<String>> securities) {
 
-        PriorityQueue<Node> maxHeap = new PriorityQueue<>((a,b) -> Double.compare(b.rate, a.rate));
+        double balance = (double) cash;
+        PriorityQueue<Stock> maxHeap = new PriorityQueue<>((a,b) -> (b.futurePrice/b.currPrice) - (a.futurePrice/a.currPrice));
 
-        for(List<String> sec : securities){
+        for(List<String> security : securities){
 
-
-            String stockName  = sec.get(0);
-            int currvalue     = Integer.parseInt(sec.get(1));
-            int futureValue   = Integer.parseInt(sec.get(2));
-            int totalShares   = Integer.parseInt(sec.get(3));
-            double rate =  (double) futureValue/currvalue;
-
-            if(currvalue > totalBudget || rate < 1) continue;
-
-            maxHeap.offer(new Node(stockName, currvalue, futureValue, totalShares, rate));
+            int currPrice = Integer.parseInt(security.get(1));
+            int futurePrice = Integer.parseInt(security.get(2));
+            int totalStocks = Integer.parseInt(security.get(3));
+            if( futurePrice > currPrice ){
+                maxHeap.add(new Stock(currPrice, futurePrice, totalStocks));
+            }            
         }
 
-        double profit = 0.0;
+        if(maxHeap.isEmpty()) return balance;
 
-        while(!maxHeap.isEmpty()  && totalBudget > 0){
-            
-            Node currStock = maxHeap.poll();
-            
-            int maxBuy = currStock.totalShares * currStock.currPrice;
-            
-            if( totalBudget >=  maxBuy){
-                totalBudget = totalBudget - (currStock.currPrice * currStock.totalShares);
-                profit = profit + (currStock.futurePrice * currStock.totalShares);
-            }else{
-                double totalStockToAfford =  (double) totalBudget/currStock.currPrice;
-                profit  = profit +  ( totalStockToAfford * currStock.futurePrice);
-                totalBudget = 0;
-            }
+        double futureProfit = 0.0;
+        while(!maxHeap.isEmpty() && balance > 0){
+
+            Stock stock = maxHeap.poll();
+            double affordableShares = Math.min(stock.totalStocks, balance/stock.currPrice);
+            balance = balance - (stock.currPrice * affordableShares); 
+            futureProfit = futureProfit + (stock.futurePrice * affordableShares);
         }
 
-        return Math.max(profit, totalBudget);
-        
+        return futureProfit;
      }
 
+     public class Stock{
+        int currPrice;
+        int futurePrice;
+        int totalStocks;
 
-    static class Node{
-         String stockName;
-         int currPrice;
-         int futurePrice;
-         int totalShares;
-         double rate;
-
-         public Node(String stockName, int currPrice, int futurePrice, int totalShares, double rate){
-             this.stockName = stockName;
-             this.currPrice = currPrice;
-             this.futurePrice = futurePrice;
-             this.totalShares = totalShares;
-             this.rate = rate;
-         }
+        public Stock(int currPrice, int futurePrice, int totalStocks){
+            this.currPrice = currPrice;
+            this.futurePrice = futurePrice;
+            this.totalStocks = totalStocks;
+        }
      }
 }
