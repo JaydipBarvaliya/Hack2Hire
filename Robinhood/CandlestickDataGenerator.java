@@ -1,46 +1,82 @@
 import java.util.*;
 
 class Solution {
-    public List<List<Integer>> getCandlesticks(List<List<Integer>> timedPrices) {
+    public List<List<Integer>> getCandlesticks(List<List<Integer>> pairs) {
 
 
-    //  timePrices = [[1, 2], [3, 4], [9, 8], [5, 10], [13, 18], [34, 32], [55, 44]]
-    PriorityQueue<int[]> minHeap = new PriorityQueue<>((a,b) -> a[0]-b[0]);
+        int endIntervalTrack = Integer.MIN_VALUE;
 
-    for(List<Integer> timedPrice : timedPrices){
-        minHeap.offer(new int[]{timedPrice.get(0), timedPrice.get(1)});
-    }
-
-
-    //  timePrices = [[1, 2], [3, 4], [5, 10], [9, 8], [13, 18], [34, 32], [55, 44]]  --> Sorted
-
-    int intervalStart = 0;
-    int intervalEnd = 9;
-
-
-
-    //[1, 2], [3, 4], [5, 10], [9, 8]
-    //[0, 10, 2, 2, 8]
-
-    while(!minHeap.isEmpty()){
-
-        int[] timeAndPrice = minHeap.peek(); // [1(time), 2(price)]
-        int currStart = timeAndPrice[0]; // 1
-        int currPrice = timeAndPrice[1]; // 2
-
-
-        if(currStart >= intervalStart && currStart <= intervalEnd){
-            
-            // calculate [<start_time>, <max_price>, <min_price>, <open_price>, <close_price>].
-            //             0,                  10,           2,             2,         8
-
+        for(List<Integer> pair : pairs){
+            endIntervalTrack = Math.max(endIntervalTrack, pair.get(0));
         }
 
+        int starting  = 0;
+        int ending    =  endIntervalTrack - (endIntervalTrack%10);
+        Map<Integer, List<List<Integer>>> map = new TreeMap<>();
+        
+        while(starting <= ending ){
+            map.put(starting, new ArrayList<>());
+            starting = starting + 10;
+        }
 
+        for (List<Integer> pair : pairs) {
 
+            int time = pair.get(0);
+            int startInterval = time - (time % 10);
+            map.get(startInterval).add(pair);
+        }
 
+        List<List<Integer>> result = new ArrayList<>();
+
+        int previousClosingPrice = 0;
+
+        for (Map.Entry<Integer, List<List<Integer>>> entry : map.entrySet()) {
+
+            int startInterval = entry.getKey();
+
+            if (entry.getValue().isEmpty()) {
+
+                List<Integer> sublist = new ArrayList<>();
+                sublist.add(startInterval);
+                sublist.add(previousClosingPrice);
+                sublist.add(previousClosingPrice);
+                sublist.add(previousClosingPrice);
+                sublist.add(previousClosingPrice);
+                result.add(sublist);
+
+            } else {
+
+                int minPrice = Integer.MAX_VALUE;
+                int maxPrice = Integer.MIN_VALUE;
+                int minTime = Integer.MAX_VALUE;
+                int maxTime = Integer.MIN_VALUE;
+                int openingPrice = 0;
+                int closingPrice = 0;
+                for (List<Integer> pair : entry.getValue()) {
+
+                    int time = pair.get(0);
+                    int price = pair.get(1);
+
+                    minPrice = Math.min(minPrice, price);
+                    maxPrice = Math.max(maxPrice, price);
+
+                    if (time < minTime) {
+                        minTime = time;
+                        openingPrice = price;
+
+                    }
+                    if (time > maxTime) {
+                        maxTime = time;
+                        closingPrice = price;
+                    }
+                }
+                List<Integer> sublist = Arrays.asList(startInterval, maxPrice, minPrice, openingPrice, closingPrice);
+                result.add(sublist);
+
+                previousClosingPrice = closingPrice;
+            }
+        };
+
+        return result;
     }
-
-    return null;
-     }
 }
