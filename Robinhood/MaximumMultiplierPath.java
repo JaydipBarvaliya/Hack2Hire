@@ -1,6 +1,7 @@
 import java.util.*;
 
 class Solution {
+    
     long maxProduct = -1; // store the best answer
 
     public int maxMultiplierProduct(int n, List<List<Integer>> edges, int src, int dest) {

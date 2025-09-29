@@ -1,5 +1,4 @@
 import java.util.*;
-import java.math.*;
 
 class Solution {
     public List<Integer> commitOffset(List<Integer> offsets) {
