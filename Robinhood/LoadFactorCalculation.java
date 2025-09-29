@@ -1,5 +1,4 @@
 import java.util.*;
-import java.math.*;
 
 class Solution {
     public List<String> loadFactorCalc(List<String> serviceList, String entryPoint) {
@@ -13,7 +12,6 @@ class Solution {
             String name = parts[0];
             adj.put(name, new ArrayList<>());
             indegreeMap.put(name, 0);
-
         }
        
         for(String service : serviceList){

@@ -1,13 +1,11 @@
 import java.util.*;
 
 
-import java.math.*;
-
 class Solution {
     public int findMaxTradeShares(List<List<String>> orders) {
 
-        PriorityQueue<Node> buyOrdersHeap = new PriorityQueue<>((nodeA, nodeB) -> nodeB.price - nodeA.price);
-        PriorityQueue<Node> sellOrdersHeap = new PriorityQueue<>((nodeA, nodeB) -> nodeA.price - nodeB.price); 
+        PriorityQueue<Node> buyOrdersMaxHeap = new PriorityQueue<>((nodeA, nodeB) -> nodeB.price - nodeA.price);
+        PriorityQueue<Node> sellOrdersMinHeap = new PriorityQueue<>((nodeA, nodeB) -> nodeA.price - nodeB.price); 
         int count = 0;
         for(List<String> order : orders){
 
@@ -15,35 +13,35 @@ class Solution {
             
                 Node buyOrder = new Node(Integer.parseInt(order.get(0)), Integer.parseInt(order.get(1)), "buy");
                 
-                if(sellOrdersHeap.isEmpty() || buyOrder.price < sellOrdersHeap.peek().price){
-                    buyOrdersHeap.offer(buyOrder);
+                if(sellOrdersMinHeap.isEmpty() || buyOrder.price < sellOrdersMinHeap.peek().price){
+                    buyOrdersMaxHeap.offer(buyOrder);
                     continue;
                 }
 
 
-                if (buyOrder.quantity == sellOrdersHeap.peek().quantity) {
+                if (buyOrder.quantity == sellOrdersMinHeap.peek().quantity) {
                     count = count + buyOrder.quantity;
-                    sellOrdersHeap.poll();
-                } else if(buyOrder.quantity < sellOrdersHeap.peek().quantity) {
+                    sellOrdersMinHeap.poll();
+                } else if(buyOrder.quantity < sellOrdersMinHeap.peek().quantity) {
 
                     count = count + buyOrder.quantity;
 
-                    Node sellOrder = sellOrdersHeap.poll();
+                    Node sellOrder = sellOrdersMinHeap.poll();
                     sellOrder.quantity = sellOrder.quantity - buyOrder.quantity;
-                    sellOrdersHeap.offer(sellOrder);
+                    sellOrdersMinHeap.offer(sellOrder);
                 }else{
-                    while(!sellOrdersHeap.isEmpty() && buyOrder.quantity != 0 && buyOrder.price >= sellOrdersHeap.peek().price){
-                        Node sellOrder = sellOrdersHeap.poll();
+                    while(!sellOrdersMinHeap.isEmpty() && buyOrder.quantity != 0 && buyOrder.price >= sellOrdersMinHeap.peek().price){
+                        Node sellOrder = sellOrdersMinHeap.poll();
                         int trade = Math.min(buyOrder.quantity, sellOrder.quantity);
                         count = count + trade;
                         buyOrder.quantity = buyOrder.quantity - trade;
                         sellOrder.quantity = sellOrder.quantity - trade;
                         if(sellOrder.quantity > 0){
-                            sellOrdersHeap.offer(sellOrder);
+                            sellOrdersMinHeap.offer(sellOrder);
                         }
                     }
                     if(buyOrder.quantity > 0){
-                        buyOrdersHeap.offer(buyOrder);
+                        buyOrdersMaxHeap.offer(buyOrder);
                     }
                 }
                     
@@ -51,34 +49,34 @@ class Solution {
 
                 Node sellOrder = new Node(Integer.parseInt(order.get(0)), Integer.parseInt(order.get(1)), "sell");
 
-                if(buyOrdersHeap.isEmpty() || sellOrder.price > buyOrdersHeap.peek().price){
-                    sellOrdersHeap.offer(sellOrder);
+                if(buyOrdersMaxHeap.isEmpty() || sellOrder.price > buyOrdersMaxHeap.peek().price){
+                    sellOrdersMinHeap.offer(sellOrder);
                     continue;
                 }
 
-                if(sellOrder.quantity == buyOrdersHeap.peek().quantity){
+                if(sellOrder.quantity == buyOrdersMaxHeap.peek().quantity){
                     count = count + sellOrder.quantity;
-                    buyOrdersHeap.poll();
-                } else if(sellOrder.quantity < buyOrdersHeap.peek().quantity) {
+                    buyOrdersMaxHeap.poll();
+                } else if(sellOrder.quantity < buyOrdersMaxHeap.peek().quantity) {
                     count = count + sellOrder.quantity;
 
-                    Node buyOrder = buyOrdersHeap.poll();
+                    Node buyOrder = buyOrdersMaxHeap.poll();
                     buyOrder.quantity = buyOrder.quantity - sellOrder.quantity;
-                    buyOrdersHeap.offer(buyOrder);
+                    buyOrdersMaxHeap.offer(buyOrder);
                 }else{
 
-                    while (!buyOrdersHeap.isEmpty() && sellOrder.quantity != 0 && sellOrder.price <= buyOrdersHeap.peek().price) {
-                        Node buyOrder = buyOrdersHeap.poll();
+                    while (!buyOrdersMaxHeap.isEmpty() && sellOrder.quantity != 0 && sellOrder.price <= buyOrdersMaxHeap.peek().price) {
+                        Node buyOrder = buyOrdersMaxHeap.poll();
                         int trade = Math.min(sellOrder.quantity, buyOrder.quantity);
                         count = count + trade;
                         sellOrder.quantity = sellOrder.quantity - trade;
                         buyOrder.quantity = buyOrder.quantity - trade;
                         if (buyOrder.quantity > 0) {
-                            buyOrdersHeap.offer(buyOrder);
+                            buyOrdersMaxHeap.offer(buyOrder);
                         }
                     }
                     if (sellOrder.quantity > 0) {
-                        sellOrdersHeap.offer(sellOrder);
+                        sellOrdersMinHeap.offer(sellOrder);
                 }
             }
         }
