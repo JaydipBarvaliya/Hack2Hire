@@ -6,7 +6,6 @@ class Solution {
        Map<String, Integer> houseMap =  countTrades(houses);
        Map<String, Integer> streetMap =  countTrades(streets);
 
-
        exactMatch(houseMap, streetMap);
 
        Map<String, List<String>> groupedHouses  = attributeMatch(houseMap);
@@ -62,8 +61,6 @@ class Solution {
 
     return newMap;
 }
-
-
     
     public List<String> offSetGrouping(Map<String, List<String>> trades){
 
@@ -145,7 +142,5 @@ class Solution {
         }
 
         return tradeMap;
-
     }
-
 }
