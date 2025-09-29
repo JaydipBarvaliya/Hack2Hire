@@ -1,72 +1,66 @@
 import java.util.*;
-import java.math.*;
 
 class Solution {
-    public List<List<String>> fractionInvent(List<List<String>> orders, List<List<String>> inventories) {
+    public List<List<String>> fractionInvent(List<List<String>> orders, List<List<String>> inventory) {
 
-       // we have used the treemap to preserver the order
+
         Map<String, Double> map = new TreeMap<>();
 
-        for(List<String> inventory : inventories){
-            String companyName = inventory.get(0);
-            double existingInventory = Double.parseDouble(inventory.get(1))/100.0;
-            map.put(companyName, existingInventory);
+        for(List<String> order: inventory){
+
+            String stock = order.get(0);
+            double quantity = Double.parseDouble(order.get(1))/100.0;
+            map.put(stock, quantity);
         }
 
 
         for(List<String> order: orders){
-            String companyName = order.get(0);
+
+            String stockName = order.get(0);
             String orderType = order.get(1);
-            String cashOrTotalShares = order.get(2);
-            String currentStockPrice = order.get(3);
-            double existingInventory = map.get(companyName);
+            String quantityOrPrice = order.get(2);
+            double unit_price = Double.parseDouble(order.get(3))/100.0;
+
+
+            double totalShares = 0.0;
+
+            if(quantityOrPrice.startsWith("$")){
+                double price = Double.parseDouble(quantityOrPrice.substring(1));
+                totalShares = (price/unit_price)/100.0;
+            }else{
+                totalShares = Double.parseDouble(quantityOrPrice)/100.0;
+            }
+
+             double existingInventory = map.get(stockName);
 
             if(orderType.equals("B")){
-                
-                double totalShareUWB = 0.0;
-                
-                if(cashOrTotalShares.startsWith("$")){
-                    totalShareUWB = Double.parseDouble(cashOrTotalShares.substring(1))/
-                                    Double.parseDouble(currentStockPrice);
-                }else{
-                    totalShareUWB = Double.parseDouble(cashOrTotalShares)/100.0;
+
+                if(existingInventory < totalShares){
+                    existingInventory = existingInventory + 1;
                 }
 
-                if(existingInventory < totalShareUWB){
-                    existingInventory = existingInventory + 1;  
-                }
+                existingInventory = existingInventory - totalShares;
+                existingInventory = existingInventory % 1.00; // this will remove any fractional part greater than 1 and even works for less then 1
+                map.put(stockName, existingInventory);
 
-                existingInventory = existingInventory - totalShareUWB;
-                existingInventory = existingInventory % 1.00;
-                map.put(companyName, existingInventory);
+            }else{
 
-            }else if(orderType.equals("S")){
-                
-                double totalShareUWS = 0.0;
-                
-                if(cashOrTotalShares.startsWith("$")){
-                    totalShareUWS = Double.parseDouble(cashOrTotalShares.substring(1))/
-                                    Double.parseDouble(currentStockPrice);
-                }else{
-                    totalShareUWS = Double.parseDouble(cashOrTotalShares)/100.0;
-                }
-
-                double totalNewInventory = existingInventory + totalShareUWS;
-                totalNewInventory = totalNewInventory % 1.00;
-                map.put(companyName, totalNewInventory);
+                existingInventory = existingInventory + totalShares;
+                existingInventory = existingInventory % 1; // this will remove any fractional part greater than 1 and even works for less then 1
+                map.put(stockName, existingInventory);
             }
         }
 
-        List<List<String>> result = new ArrayList<>(); 
 
-        for (Map.Entry<String, Double> entry : map.entrySet()) {
-            List<String> list = new ArrayList<>();
-            list.add(entry.getKey());
-            list.add(Integer.toString((int)Math.round(entry.getValue() * 100))); 
-            result.add(list);
-        }
+        List<List<String>> result = new ArrayList<>();
 
+        map.entrySet().forEach(entry -> {
+
+            String stock = entry.getKey();
+            double quantity = entry.getValue();
+            int fractionalQuantity = (int)Math.round(quantity * 100);
+            result.add(Arrays.asList(stock, String.valueOf(fractionalQuantity)));
+        });
         return result;
-
      }
 }
